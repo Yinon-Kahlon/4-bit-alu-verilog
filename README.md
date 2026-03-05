@@ -1,4 +1,4 @@
-# 4-Bit ALU in Verilog
+# 4-Bit ALU (Verilog)
 
 A simple 4-bit Arithmetic Logic Unit (ALU) implemented in Verilog. Supports 8 operations selected by a 3-bit opcode. Written as a first hardware design project.
 
