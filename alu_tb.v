@@ -50,28 +50,28 @@ module alu_tb;
         // A = 0011 (3), B = 0101 (5), opcode 000 = ADD
         A = 4'b0011; B = 4'b0101; opcode = 3'b000;
         #10;  // ממתינים 10 ננו-שניות עד שהמעגל מתייצב
-        $display("ADD:  %b + %b = %b  (עשרוני: %0d)  zero=%b carry=%b",
+        $display("ADD:  %b + %b = %b  (dec: %0d)  zero=%b carry=%b",
                   A, B, result, result, zero, carry);
 
         // === בדיקה 2: AND — 1100 & 1010 = 1000 ===
         // A = 1100 (12), B = 1010 (10), opcode 010 = AND
         A = 4'b1100; B = 4'b1010; opcode = 3'b010;
         #10;
-        $display("AND:  %b & %b = %b  (עשרוני: %0d)  zero=%b carry=%b",
+        $display("AND:  %b & %b = %b  (dec: %0d)  zero=%b carry=%b",
                   A, B, result, result, zero, carry);
 
         // === בדיקה 3: NOT — ~0011 = 1100 ===
         // A = 0011 (3), opcode 101 = NOT (B לא רלוונטי כאן)
         A = 4'b0011; B = 4'b0000; opcode = 3'b101;
         #10;
-        $display("NOT:  ~%b   = %b  (עשרוני: %0d)  zero=%b carry=%b",
+        $display("NOT:  ~%b   = %b  (dec: %0d)  zero=%b carry=%b",
                   A, result, result, zero, carry);
 
         // === בדיקה 4: הזזה שמאלה — 0011 → 0110 ===
         // A = 0011 (3), opcode 110 = SHL (שקול לכפל ב-2 = 6)
         A = 4'b0011; B = 4'b0000; opcode = 3'b110;
         #10;
-        $display("SHL:  %b <<1  = %b  (עשרוני: %0d)  zero=%b carry=%b",
+        $display("SHL:  %b <<1  = %b  (dec: %0d)  zero=%b carry=%b",
                   A, result, result, zero, carry);
 
         $display("-----------------------------------------------");
