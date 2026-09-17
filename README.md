@@ -1,6 +1,9 @@
 # 4-Bit ALU (Verilog)
 
-A simple 4-bit Arithmetic Logic Unit (ALU) implemented in Verilog. Supports 8 operations selected by a 3-bit opcode. Written as a first hardware design project.
+A 4-bit Arithmetic Logic Unit implemented in Verilog, supporting 8 operations
+selected by a 3-bit opcode. Verified by an exhaustive self-checking testbench:
+every opcode is swept against every operand pair and compared to an independent
+reference model.
 
 ---
 
@@ -28,7 +31,53 @@ A simple 4-bit Arithmetic Logic Unit (ALU) implemented in Verilog. Supports 8 op
 | `opcode` | Input     | 3-bit  | Selects operation |
 | `result` | Output    | 4-bit  | Operation result |
 | `zero`   | Output    | 1-bit  | High when result == 0 |
-| `carry`  | Output    | 1-bit  | High on arithmetic overflow |
+| `carry`  | Output    | 1-bit  | Carry out on ADD, borrow on SUB, 0 otherwise |
+
+---
+
+## Design Notes
+
+**Carry is an arithmetic flag only.** The datapath computes into a 5-bit
+temporary, so bit 4 naturally captures the carry out of an ADD and the borrow
+of a SUB. Logic and shift operations leave the temporary at zero, so `carry`
+reads 0 for them.
+
+**Shifts are logical, and the shifted-out bit is discarded.** `SHL` on `1000`
+gives `0000` with `carry = 0`; the MSB is not routed to the carry flag. This is
+a deliberate choice to keep `carry` meaning "arithmetic carry/borrow" rather
+than overloading it with a shift-out bit. A design that needs rotate-through-carry
+semantics would wire `A[3]` into `carry` on SHL and `A[0]` on SHR.
+
+**No latches.** `result` and the temporary are assigned default values at the top
+of the `always @(*)` block, so every path through the `case` writes both.
+
+---
+
+## Verification
+
+`alu_tb.v` is self-checking. It walks all **8 opcodes x 16 values of A x 16
+values of B = 2,048 vectors** and, for each one, compares `result`, `zero` and
+`carry` against a golden reference model written separately from the DUT. Any
+disagreement prints the inputs, the observed outputs and the expected outputs,
+and increments an error counter. The run ends with an explicit PASS/FAIL line,
+so the result does not depend on a human reading a table.
+
+**Current status:**
+
+```
+-----------------------------------------------
+ 4-bit ALU - exhaustive self-checking sweep
+ 8 opcodes x 16 A values x 16 B values
+-----------------------------------------------
+-----------------------------------------------
+ vectors checked : 2048
+ mismatches      : 0
+ RESULT          : PASS
+-----------------------------------------------
+```
+
+The VCD dump is still produced, so the same run can be opened in GTKWave to
+inspect any individual vector on the waveform.
 
 ---
 
@@ -36,7 +85,7 @@ A simple 4-bit Arithmetic Logic Unit (ALU) implemented in Verilog. Supports 8 op
 
 ```
 ├── alu.v        # ALU module
-├── alu_tb.v     # Testbench with 4 test cases
+├── alu_tb.v     # Self-checking testbench (2,048-vector exhaustive sweep)
 └── README.md
 ```
 
@@ -53,20 +102,8 @@ iverilog -o sim.out alu.v alu_tb.v
 # 2. Run simulation
 vvp sim.out
 
-# 3. Open waveforms
+# 3. Open waveforms (optional)
 gtkwave alu_tb.vcd
-```
-
-**Expected output:**
-```
------------------------------------------------
- A    B    opcode  result  zero  carry
------------------------------------------------
-ADD:  0011 + 0101 = 1000  (decimal: 8)   zero=0 carry=0
-AND:  1100 & 1010 = 1000  (decimal: 8)   zero=0 carry=0
-NOT:  ~0011       = 1100  (decimal: 12)  zero=0 carry=0
-SHL:  0011 <<1    = 0110  (decimal: 6)   zero=0 carry=0
------------------------------------------------
 ```
 
 ---
@@ -74,5 +111,5 @@ SHL:  0011 <<1    = 0110  (decimal: 6)   zero=0 carry=0
 ## Tools
 
 - **Language:** Verilog (IEEE 1364-2001)
-- **Simulator:** Icarus Verilog
+- **Simulator:** Icarus Verilog 12.0
 - **Waveform viewer:** GTKWave
